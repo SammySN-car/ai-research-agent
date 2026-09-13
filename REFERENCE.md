@@ -3746,12 +3746,7 @@ Setting up the project structure, virtual environment, dependencies, environment
 ## Files to Create
 
 - `.env` — API keys and secrets (git-ignored)
-- `app/__init__.py` — Makes `app` a Python package
 - `app/config.py` — Central configuration
-- `app/db/__init__.py` — Database subpackage
-- `app/rag/__init__.py` — RAG subpackage
-- `app/agent/__init__.py` — Agent subpackage
-- `app/api/__init__.py` — API subpackage
 - `requirements.txt` — Dependencies
 
 ## Reference Code
@@ -3780,12 +3775,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # ── Paths ──────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 UPLOAD_DIR = PROJECT_ROOT / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+# Load environment variables from .env in the project root
+load_dotenv(PROJECT_ROOT / ".env")
 
 # ── API Keys & LLM Endpoint (OpenRouter) ───────────────
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -3793,17 +3789,17 @@ OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/ap
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# ── Embedding Settings (Local — runs offline/free) ────
+# ── Embedding Settings (Local sentence-transformers) ──
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
 
 # ── Chunking Settings ─────────────────────────────────
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 50
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
 
 # ── Retrieval Settings ─────────────────────────────────
-TOP_K = 5
-SIMILARITY_THRESHOLD = 0.3
+TOP_K = int(os.getenv("TOP_K", "5"))
+SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.3"))
 
 # ── LLM Settings ──────────────────────────────────────
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
@@ -3833,10 +3829,10 @@ python-multipart>=0.0.9
 
 - [ ] Virtual environment created (`python -m venv venv`)
 - [ ] Dependencies installed (`pip install -r requirements.txt`)
-- [ ] `.env` file with placeholder keys
-- [ ] `config.py` loads environment variables
+- [ ] `.env` file with OpenRouter & Supabase keys
+- [ ] `config.py` loads environment variables with fallback defaults
 - [ ] Upload directory auto-created
-- [ ] All `__init__.py` files in place
+- [ ] Clean package structure without redundant `__init__.py` files
 
 ---
 
@@ -4926,28 +4922,25 @@ pytest tests/ -v --tb=short
 ```text
 ai-research-agent/
 ├── .env                  # API keys (git-ignored)
+├── .env.example          # Environment variables template
 ├── .gitignore
+├── README.md             # Project overview
 ├── requirements.txt
 ├── app/
-│   ├── __init__.py
 │   ├── config.py         # Central configuration
 │   ├── db/
-│   │   ├── __init__.py
 │   │   ├── client.py     # Supabase client singleton
 │   │   ├── operations.py # CRUD operations
 │   │   └── schema.sql    # Database schema + functions
 │   ├── rag/
-│   │   ├── __init__.py
 │   │   ├── embeddings.py # Embedding engine
 │   │   ├── ingestion.py  # Parse → chunk → embed → store
 │   │   ├── retrieval.py  # Vector search + context formatting
 │   │   └── chain.py      # LangChain RAG chain
 │   ├── agent/
-│   │   ├── __init__.py
 │   │   ├── tools.py      # Agent tool definitions
 │   │   └── graph.py      # LangGraph agent workflow
 │   └── api/
-│       ├── __init__.py
 │       └── main.py       # FastAPI endpoints
 ├── tests/
 │   └── test_components.py
