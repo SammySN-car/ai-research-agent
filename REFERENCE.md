@@ -162,7 +162,7 @@ User Question
 |---|---|---|
 | Agent Framework | LangGraph | Stateful multi-step workflows with loops and conditional routing |
 | LLM Abstraction | LangChain | Chains, tools, structured output, prompt templates |
-| Embeddings | sentence-transformers | Local, fast, 384-dim vectors — no API calls needed |
+| Embeddings | sentence-transformers (`BAAI/bge-small-en-v1.5`) | Local, 384-dim, high-accuracy MTEB score, 512-token context — 100% free & unlimited |
 | Database | Supabase (PostgreSQL + pgvector) | Hosted, vector search built-in, generous free tier |
 | API | FastAPI | Async-native, automatic OpenAPI docs, type-safe |
 | LLM Provider | OpenRouter (`openai/gpt-4o-mini`) | Unified API gateway, access to 100+ models, OpenAI-compatible endpoint, reliable tool calling |
@@ -287,18 +287,45 @@ Our embedding model outputs normalized vectors, so we use dot product for fast c
 | `<->` | L2 (Euclidean) distance | Straight-line distance |
 | `<#>` | Inner product (negative) | For normalized vectors |
 
-## Our Embedding Model
+## Our Embedding Model: `BAAI/bge-small-en-v1.5`
 
 | Property | Value |
 |---|---|
-| Model | `all-MiniLM-L6-v2` |
-| Dimensions | 384 |
-| Max Sequence Length | 256 tokens (~200 words) |
-| Speed | ~14,000 sentences/sec on GPU, fast on CPU |
-| Size | ~80 MB |
+| Model | `BAAI/bge-small-en-v1.5` |
+| Dimensions | 384 (matches Supabase `VECTOR(384)`) |
+| Max Sequence Length | 512 tokens (~400 words — 2x MiniLM) |
+| MTEB Benchmark Score | **62.1** (vs 56.3 for legacy `all-MiniLM-L6-v2`) |
+| Speed | ~12,000 sentences/sec on GPU, fast on CPU |
+| Size | ~133 MB |
+| Usage Limit | **Truly 100% Unlimited** (runs locally on your machine, 0 cost, 0 rate limits) |
 | Normalization | L2-normalized output |
 
-**Why this model?** It's the best balance of quality, speed, and size for a portfolio project. It runs locally (no API costs), loads in seconds, and produces high-quality embeddings for English text.
+**Why this model?**
+While `all-MiniLM-L6-v2` was the 2021 standard, it has a major weakness: it silently truncates text after only 256 tokens (~150–200 words). **`BAAI/bge-small-en-v1.5`** is the modern state-of-the-art open-source embedding model that provides:
+1. **Double the context window** (512 tokens), preventing chunk truncation.
+2. **Significantly higher retrieval accuracy** on the Massive Text Embedding Benchmark (MTEB).
+3. **Drop-in 384-dimensional compatibility** with our Supabase pgvector schema.
+4. **Truly unlimited**: No API keys, no daily request ceilings, and 100% offline privacy.
+
+### Cloud Alternative: Google Gemini (`text-embedding-004`)
+
+For developers who prefer **zero local CPU and RAM usage** on their computer, Google AI Studio offers a free tier for `text-embedding-004`:
+
+```python
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+# Google text-embedding-004 with Matryoshka dimension reduction to 384
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/text-embedding-004",
+    google_api_key=os.getenv("GEMINI_API_KEY"),
+    output_dimensionality=384,  # Fits our Supabase VECTOR(384) schema!
+)
+vector = embeddings.embed_query("What is deep learning?")
+```
+
+> [!WARNING]
+> **Cloud Quota Trade-Off**:
+> Google's free tier allows 1,500 requests per minute, but is capped at **1,500 Requests Per Day (RPD)**. Ingesting large PDFs (which split into dozens or hundreds of chunks) can exhaust this daily limit and trigger `429 ResourceExhausted` errors. This is why our project defaults to **`BAAI/bge-small-en-v1.5`** locally for true, unmetered, unlimited execution.
 
 ---
 
@@ -478,7 +505,7 @@ print(response.content)
 
 > [!NOTE]
 > **Why this project needs only ONE API key**:
-> In our research agent, document embeddings are computed **100% locally** using `sentence-transformers` (`all-MiniLM-L6-v2`, 384 dimensions) on your machine. You do **not** need an OpenAI embedding key or any vector API billing. Your OpenRouter key handles all reasoning, tool decisions, and answer synthesis!
+> In our research agent, document embeddings are computed **100% locally** using `sentence-transformers` (`BAAI/bge-small-en-v1.5`, 384 dimensions) on your machine. You do **not** need an OpenAI embedding key or any vector API billing. Your OpenRouter key handles all reasoning, tool decisions, and answer synthesis!
 
 ### Key `ChatOpenAI` Parameters (with OpenRouter)
 
@@ -976,10 +1003,11 @@ chunks = text_splitter.split_documents(raw_docs)
 print(f"Created {len(chunks)} chunks from {len(raw_docs)} document(s)")
 
 # 3. Embed & Store: convert text to vectors and store in vector database
-# In our project: Local sentence-transformers ('all-MiniLM-L6-v2', 384 dimensions)
-# requires NO external API keys and runs completely free/offline:
+# In our project: Local sentence-transformers ('BAAI/bge-small-en-v1.5', 384 dimensions)
+# requires NO external API keys and runs completely free/offline with unlimited calls:
 # from langchain_huggingface import HuggingFaceEmbeddings
-# embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+# (Or cloud: GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", output_dimensionality=384))
 # (If using direct OpenAI embeddings: OpenAIEmbeddings(model="text-embedding-3-small"))
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 vectorstore = InMemoryVectorStore.from_documents(chunks, embeddings)
@@ -2636,9 +2664,10 @@ $$;
 ```python
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# 1. Primary: Local BAAI/bge-small-en-v1.5 (100% Free, Unlimited, Offline)
+model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
-# Single text
+# Single text (384-dimensional vector)
 embedding = model.encode("machine learning", normalize_embeddings=True)
 print(f"Shape: {embedding.shape}")  # (384,)
 
@@ -2648,6 +2677,13 @@ embeddings = model.encode(
     normalize_embeddings=True,
 )
 print(f"Batch shape: {embeddings.shape}")  # (3, 384)
+
+# 2. Cloud Alternative: Google Gemini text-embedding-004 (0 local CPU/RAM, 1,500 RPD free)
+# from langchain_google_genai import GoogleGenerativeAIEmbeddings
+# gemini_embed = GoogleGenerativeAIEmbeddings(
+#     model="models/text-embedding-004",
+#     output_dimensionality=384,
+# )
 ```
 
 ## 8.2 Text Splitting (Chunking)
@@ -3760,6 +3796,9 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 LLM_MODEL=openai/gpt-4o-mini
 TEMPERATURE=0.1
 
+# Embedding Configuration (100% Free, Local, Unlimited)
+EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+
 # Supabase Configuration (Vector Database)
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_KEY=your-supabase-anon-key-here
@@ -3789,8 +3828,8 @@ OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/ap
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# ── Embedding Settings (Local sentence-transformers) ──
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+# ── Embedding Settings (Local sentence-transformers — 100% Free & Unlimited) ──
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 EMBEDDING_DIM = 384
 
 # ── Chunking Settings ─────────────────────────────────
@@ -4055,7 +4094,7 @@ def save_query(
 
 ## What We're Doing
 
-Building the embedding module using `sentence-transformers`. This module is responsible for converting text into 384-dimensional vectors and computing similarity scores.
+Building the embedding module using `sentence-transformers` with **`BAAI/bge-small-en-v1.5`**. This module is responsible for converting text into 384-dimensional dense vectors and computing similarity scores. It runs 100% locally on your machine with **zero API keys, zero costs, and unlimited usage**.
 
 ## Reference Code
 

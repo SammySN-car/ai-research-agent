@@ -19,8 +19,8 @@ OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/ap
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# ── Embedding Settings (Local sentence-transformers) ──
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+# ── Embedding Settings (Local sentence-transformers — 100% Free & Unlimited) ──
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 EMBEDDING_DIM = 384
 
 # ── Chunking Settings ─────────────────────────────────
