@@ -17,7 +17,7 @@ def create_document(
     response = client.table("documents").insert(data).execute()
     return cast(dict[str, Any], response.data[0])
 
-def create_chunks(document_id: int, chunk_records: list[dict]) -> None:
+def create_chunks(document_id: str, chunk_records: list[dict]) -> None:
     """Insert chunk records for a document."""
     client = get_supabase_client()
     rows = [
@@ -43,8 +43,8 @@ def search_chunks(
         "match_documents",
         {
             "query_embedding": query_embedding,
-            "top_k": top_k,
-            "threshold": threshold,
+            "match_count": top_k,
+            "match_threshold": threshold,
         },
     ).execute()
     return cast(list[dict], response.data)
