@@ -221,7 +221,7 @@ uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
   - Tables, IVFFlat index, `match_documents` RPC, and CRUD operations in `app/db/`.
 - [x] **Milestone 3: Local Embedding Engine**
   - `BAAI/bge-small-en-v1.5` singleton with dynamic CUDA/CPU fallback and normalized cosine vectors in `app/rag/embeddings.py`.
-- [ ] **Milestone 4: Document Ingestion Pipeline**
+- [x] **Milestone 4: Document Ingestion Pipeline**
   - PDF/TXT/MD parsing, recursive chunking, and batch vector storage in `app/rag/ingestion.py`.
 - [ ] **Milestone 5: Vector Search & Hybrid Retrieval**
   - Semantic similarity search and contextual retrieval in `app/rag/retrieval.py`.
