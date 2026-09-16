@@ -223,7 +223,7 @@ uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
   - `BAAI/bge-small-en-v1.5` singleton with dynamic CUDA/CPU fallback and normalized cosine vectors in `app/rag/embeddings.py`.
 - [x] **Milestone 4: Document Ingestion Pipeline**
   - PDF/TXT/MD parsing, recursive chunking, and batch vector storage in `app/rag/ingestion.py`.
-- [ ] **Milestone 5: Vector Search & Hybrid Retrieval**
+- [x] **Milestone 5: Vector Search & Hybrid Retrieval**
   - Semantic similarity search and contextual retrieval in `app/rag/retrieval.py`.
 - [ ] **Milestone 6: RAG LCEL Synthesis Chain**
   - Prompt templates, context injection, and cited answering in `app/rag/chain.py`.
