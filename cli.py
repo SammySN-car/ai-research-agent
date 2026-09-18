@@ -7,7 +7,7 @@ from app.rag.ingestion import ingest_document
 
 def main():
     print("=" * 60)
-    print("🔬 AI Research Agent — Terminal Chat Mode")
+    print("AI Research Agent - Terminal Chat Mode")
     print("Commands:")
     print("  /upload <path>   Upload & ingest a file (PDF, TXT, MD)")
     print("  exit / quit      Exit chat")
@@ -32,9 +32,9 @@ def main():
                 print(f"Ingesting: {path}...")
                 try:
                     doc = ingest_document(path)
-                    print(f"✅ Ingested {doc['filename']} ({doc['chunk_count']} chunks) into Supabase pgvector!")
+                    print(f"[SUCCESS] Ingested {doc['filename']} ({doc['chunk_count']} chunks) into Supabase pgvector!")
                 except Exception as e:
-                    print(f"❌ Ingestion failed: {e}")
+                    print(f"[ERROR] Ingestion failed: {e}")
                 continue
 
             print("\n[Agent is retrieving & reasoning...]")
@@ -56,7 +56,7 @@ def main():
             print("\nSession closed. Goodbye!")
             break
         except Exception as e:
-            print(f"\n❌ Error: {e}")
+            print(f"\n[ERROR] {e}")
 
 
 if __name__ == "__main__":
