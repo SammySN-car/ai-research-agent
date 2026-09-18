@@ -225,14 +225,14 @@ uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
   - PDF/TXT/MD parsing, recursive chunking, and batch vector storage in `app/rag/ingestion.py`.
 - [x] **Milestone 5: Vector Search & Hybrid Retrieval**
   - Semantic similarity search and contextual retrieval in `app/rag/retrieval.py`.
-- [ ] **Milestone 6: RAG LCEL Synthesis Chain**
+- [x] **Milestone 6: RAG LCEL Synthesis Chain**
   - Prompt templates, context injection, and cited answering in `app/rag/chain.py`.
-- [ ] **Milestone 7: Agent Tools**
+- [x] **Milestone 7: Agent Tools**
   - Tool wrappers for document retrieval, summarization, and calculations in `app/agent/tools.py`.
-- [ ] **Milestone 8: LangGraph Workflow**
+- [x] **Milestone 8: LangGraph Workflow**
   - Cyclic state graph with conditional edges, dynamic query routing, and reflection in `app/agent/graph.py`.
-- [ ] **Milestone 9: FastAPI Endpoints & UI Integration**
-  - File upload, query endpoint, streaming responses, and chat history.
+- [x] **Milestone 9: FastAPI Endpoints & UI Integration**
+  - File upload, query endpoint, streaming responses, and test suite in `app/api/main.py` and `tests/`.
 
 ---
 
