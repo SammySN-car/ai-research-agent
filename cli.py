@@ -6,6 +6,7 @@ from app.rag.ingestion import ingest_document
 
 
 def main():
+    """Initializes the AI Research Agent and displays the available terminal commands, including file upload and exit options. It enters a continuous loop that accepts user input, processing commands like /upload to ingest documents or sending general queries to the agent for retrieval and reasoning. The loop continues until the user explicitly types exit, quit, or q."""
     print("=" * 60)
     print("AI Research Agent - Terminal Chat Mode")
     print("Commands:")
